@@ -1,0 +1,5 @@
+spring:
+    application:
+        name: tasks_app
+server:
+    port: 8090
