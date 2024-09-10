@@ -1,5 +1,19 @@
-spring:
-    application:
-        name: tasks_app
 server:
-    port: 8090
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: tasks_app
+  datasource:
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    url: ${DATASOURCE_URL}
+    driver-class-name: ${DATASOURCE_DRIVER_CLASS_NAME}
+  jpa:
+    database: ${JPA_DATABASE}
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect

@@ -1,6 +1,6 @@
 services:
   db:
-    container_name: postrges_db
+    container_name: postgres_db
     image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -11,8 +11,6 @@ services:
       - postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
-    networks:
-      - spring
     restart: unless-stopped
 
   pg_admin:
@@ -26,15 +24,13 @@ services:
       - pgadmin:/var/lib/pgadmin
     ports:
       - '${PGADMIN_PORT:-5050}:80'
-    networks:
-      - spring
     depends_on:
       - db
     restart: unless-stopped
 
-networks:
-  spring:
-    driver: bridge
+#networks:
+#  spring:
+#    driver: bridge
 
 volumes:
   postgres:

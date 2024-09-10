@@ -16,7 +16,7 @@ class Task (
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tasks_sequence")
     @SequenceGenerator(name = "tasks_sequence", sequenceName = "tasks_sequence", allocationSize = 50)
-    var id: Long = 0,
+    val id: Long = 0,
 
     @Column(nullable = false, unique = true)
     var description: String = "",
@@ -32,7 +32,7 @@ class Task (
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    var createdDate: LocalDateTime = LocalDateTime.now(),
+    val createdDate: LocalDateTime = LocalDateTime.now(),
 
     @LastModifiedDate
     @Column(insertable = false)

@@ -7,8 +7,8 @@ import com.demo.tasks_app.entities.dto.UpdateTaskDto
 interface TaskService {
     fun findAllTasks(): List<Task>
     fun findTaskById(taskId: Long): Task
-    fun createTask(taskDto: CreateTaskDto): Task
-    fun updateTask(updateTaskDto: UpdateTaskDto): Task
-
+    fun createTask(request: CreateTaskDto): Task
+    fun updateTask(request: UpdateTaskDto): Task
     fun deleteTask(taskId: Long): Unit
+    fun findTasksByStatus(status: Boolean): List<Task>
 }

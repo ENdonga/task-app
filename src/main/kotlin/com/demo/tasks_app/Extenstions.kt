@@ -23,6 +23,10 @@ fun CreateTaskDto.toTaskEntity(): Task {
     )
 }
 
+/**
+ * Converts a request object from DTO to entity and performs an update on all non-null fields from the request
+ * If a field has not been provided in the request it is not updated
+ */
 fun UpdateTaskDto.applyUpdatesTo(task: Task): Task {
     this.description?.let { task.description = it }
     this.isReminderSet?.let { task.isReminderSet = it }
@@ -31,9 +35,12 @@ fun UpdateTaskDto.applyUpdatesTo(task: Task): Task {
     return task
 }
 
+/**
+ * Converts a request object from DTO to entity and performs an update on all non-null fields from the request
+ * If a field has not been provided in the request it is not updated
+ */
 fun UpdateTaskDto.toTaskEntity(existingTask: Task): Task {
     return existingTask.apply {
-        id = this@toTaskEntity.id
         description = this@toTaskEntity.description ?: description
         isReminderSet = this@toTaskEntity.isReminderSet ?: isReminderSet
         isTaskOpen = this@toTaskEntity.isTaskOpen ?: isTaskOpen
