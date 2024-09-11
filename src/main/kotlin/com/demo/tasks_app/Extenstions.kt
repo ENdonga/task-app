@@ -44,6 +44,6 @@ fun UpdateTaskDto.toTaskEntity(existingTask: Task): Task {
         description = this@toTaskEntity.description ?: description
         isReminderSet = this@toTaskEntity.isReminderSet ?: isReminderSet
         isTaskOpen = this@toTaskEntity.isTaskOpen ?: isTaskOpen
-        priority = (this@toTaskEntity.priority ?: priority) as Priority
+        priority = this@toTaskEntity.priority?.let { Priority.valueOf(it.uppercase()) } ?: priority
     }
 }

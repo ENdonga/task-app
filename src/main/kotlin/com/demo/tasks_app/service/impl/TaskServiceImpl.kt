@@ -3,7 +3,6 @@ package com.demo.tasks_app.service.impl
 import com.demo.tasks_app.entities.Task
 import com.demo.tasks_app.entities.dto.CreateTaskDto
 import com.demo.tasks_app.entities.dto.UpdateTaskDto
-import com.demo.tasks_app.exception.ApiException
 import com.demo.tasks_app.repository.TaskRepository
 import com.demo.tasks_app.service.TaskService
 import com.demo.tasks_app.toTaskEntity
@@ -39,11 +38,5 @@ class TaskServiceImpl(private val repository: TaskRepository) : TaskService {
     override fun deleteTask(taskId: Long) {
         val task = findTaskById(taskId)
         repository.deleteById(task.id)
-    }
-
-    private fun checkIfDescriptionExists(description: String) {
-        if (repository.doesTaskDescriptionExist(description)) {
-            throw ApiException("A task with this description '$description' already exists")
-        }
     }
 }
