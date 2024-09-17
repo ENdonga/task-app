@@ -4,6 +4,7 @@ import com.demo.tasks_app.entities.Priority
 import com.demo.tasks_app.entities.Task
 import com.demo.tasks_app.entities.dto.CreateTaskDto
 import com.demo.tasks_app.entities.dto.UpdateTaskDto
+import com.demo.tasks_app.exception.TaskAlreadyExistsException
 import com.demo.tasks_app.repository.TaskRepository
 import com.demo.tasks_app.toTaskEntity
 import io.mockk.*
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.dao.DataIntegrityViolationException
 import java.util.*
 
 @ExtendWith(MockKExtension::class)
@@ -60,6 +62,16 @@ class TaskServiceImplTest {
 
         assertThat(result).isNotNull
         assertThat(result.description).isEqualTo(createRequest.description)
+    }
+
+    @Test
+    fun `should throw an exception when task description exists in the database`() {
+        val existingTask = createRequest.toTaskEntity()
+        val dataIntegrityViolationException =
+            DataIntegrityViolationException("Task with description '${existingTask.description}' already exists")
+        every { repository.save(any()) } throws dataIntegrityViolationException
+        val exception = assertThrows<TaskAlreadyExistsException> { service.createTask(createRequest) }
+        assertThat(exception.message).isEqualTo("Task with description '${existingTask.description}' already exists")
     }
 
     @Test
