@@ -28,9 +28,9 @@ class TaskServiceImplTest {
     private lateinit var service: TaskServiceImpl
     private lateinit var createRequest: CreateTaskDto
     private val tasks = listOf(
-        Task(1L, "Task 1", false, true, Priority.HIGH),
-        Task(2L, "Task 2", true, false, Priority.MEDIUM),
-        Task(3L, "Task 3", false, true, Priority.LOW),
+        Task(id = 1L, description = "Task 1", isReminderSet = false, isTaskOpen = true, priority = Priority.HIGH),
+        Task(id = 2L, description = "Task 2", isReminderSet = true, isTaskOpen = false, priority = Priority.MEDIUM),
+        Task(id = 3L, description = "Task 3", isReminderSet = false, isTaskOpen = true, priority = Priority.LOW),
     )
 
     @BeforeEach
@@ -90,8 +90,20 @@ class TaskServiceImplTest {
     @Test
     fun `should update a task when the task is found in the database`() {
         // given
-        val existingTask = Task(1L, "Sample description", false, true, Priority.LOW)
-        val updateRequest = UpdateTaskDto(1L, "Updated description", true, false, Priority.MEDIUM.toString())
+        val existingTask = Task(
+            id = 1L,
+            description = "Sample description",
+            isReminderSet = false,
+            isTaskOpen = true,
+            priority = Priority.LOW
+        )
+        val updateRequest = UpdateTaskDto(
+            id = 1L,
+            description = "Updated description",
+            isReminderSet = true,
+            isTaskOpen = false,
+            priority = Priority.MEDIUM.toString()
+        )
         val updatedTask = updateRequest.toTaskEntity(existingTask)
         // when
         every { repository.findById(1L) } returns Optional.of(existingTask)
@@ -107,7 +119,13 @@ class TaskServiceImplTest {
     @Test
     fun `should throw EntityNotFoundException if task to update is not found`() {
         // given
-        val updateRequest = UpdateTaskDto(1L, "Updated description", true, false, Priority.MEDIUM.toString())
+        val updateRequest = UpdateTaskDto(
+            id = 1L,
+            description = "Updated description",
+            isReminderSet = true,
+            isTaskOpen = false,
+            priority = Priority.MEDIUM.toString()
+        )
         // when
         every { repository.findById(1L) } returns Optional.empty()
         val exception = assertThrows<EntityNotFoundException> { service.updateTask(updateRequest) }
@@ -121,8 +139,8 @@ class TaskServiceImplTest {
     fun `should return a list of tasks of all open tasks`() {
         // given
         val openTasks = listOf(
-            Task(1L, "Task 1", false, true, Priority.LOW),
-            Task(2L, "Task 2", false, true, Priority.MEDIUM)
+            Task(id = 1L, description = "Task 1", isReminderSet = false, isTaskOpen = true, priority = Priority.LOW),
+            Task(id = 2L, description = "Task 2", isReminderSet = false, isTaskOpen = true, priority = Priority.MEDIUM)
         )
         // when
         every { repository.findTasksByStatus(any()) } returns openTasks
@@ -136,8 +154,8 @@ class TaskServiceImplTest {
     fun `should return a list of tasks of all closed tasks`() {
         // given
         val openTasks = listOf(
-            Task(1L, "Task 1", false, false, Priority.LOW),
-            Task(2L, "Task 2", false, false, Priority.MEDIUM)
+            Task(id = 1L, description = "Task 1", isReminderSet = false, isTaskOpen = false, priority = Priority.LOW),
+            Task(id = 2L, description = "Task 2", isReminderSet = false, isTaskOpen = false, priority = Priority.MEDIUM)
         )
         // when
         every { repository.findTasksByStatus(any()) } returns openTasks
@@ -151,7 +169,9 @@ class TaskServiceImplTest {
     fun `should delete a task successfully`() {
         // given
         val taskId = 1L
-        val task = Task(taskId, "Sample Task", false, true, Priority.HIGH)
+        val task = Task(
+            id = taskId, description = "Sample Task", isReminderSet = false, isTaskOpen = true, priority = Priority.HIGH
+        )
         // when
         every { repository.findById(1L) } returns Optional.of(task)
         every { repository.deleteById(any()) } just Runs
