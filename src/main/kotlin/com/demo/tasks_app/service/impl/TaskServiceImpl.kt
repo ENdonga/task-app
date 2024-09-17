@@ -3,10 +3,12 @@ package com.demo.tasks_app.service.impl
 import com.demo.tasks_app.entities.Task
 import com.demo.tasks_app.entities.dto.CreateTaskDto
 import com.demo.tasks_app.entities.dto.UpdateTaskDto
+import com.demo.tasks_app.exception.TaskAlreadyExistsException
 import com.demo.tasks_app.repository.TaskRepository
 import com.demo.tasks_app.service.TaskService
 import com.demo.tasks_app.toTaskEntity
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 
 @Service
@@ -25,8 +27,12 @@ class TaskServiceImpl(private val repository: TaskRepository) : TaskService {
     }
 
     override fun createTask(request: CreateTaskDto): Task {
-        val task = request.toTaskEntity()
-        return repository.save(task)
+        try {
+            val task = request.toTaskEntity()
+            return repository.save(task)
+        } catch (ex: DataIntegrityViolationException) {
+            throw TaskAlreadyExistsException("Task with description '${request.description}' already exists")
+        }
     }
 
     override fun updateTask(request: UpdateTaskDto): Task {

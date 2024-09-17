@@ -80,6 +80,11 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         return buildErrorResponse(exceptionMessage, reason, BAD_REQUEST)
     }
 
+    @ExceptionHandler(TaskAlreadyExistsException::class)
+    fun handleTaskAlreadyExistsException(ex: TaskAlreadyExistsException): ResponseEntity<ApiResponse> {
+        return buildErrorResponse(exceptionMessage, ex.message, CONFLICT)
+    }
+
     @ExceptionHandler(DataAccessException::class)
     fun handleDaoException(ex: DataAccessException): ResponseEntity<ApiResponse> {
         return buildErrorResponse(exceptionMessage, ErrorCodes.SQL_QUERY_ERROR.description, INTERNAL_SERVER_ERROR)
