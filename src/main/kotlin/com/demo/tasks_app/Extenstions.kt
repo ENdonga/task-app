@@ -47,3 +47,13 @@ fun UpdateTaskDto.toTaskEntity(existingTask: Task): Task {
         priority = this@toTaskEntity.priority?.let { Priority.valueOf(it.uppercase()) } ?: priority
     }
 }
+
+fun TaskDto.toTaskEntity(): Task {
+    return Task(
+        id = this.id,
+        description = this.description,
+        isReminderSet = this.isReminderSet,
+        isTaskOpen = this.isTaskOpen,
+        priority = this.priority
+    )
+}
