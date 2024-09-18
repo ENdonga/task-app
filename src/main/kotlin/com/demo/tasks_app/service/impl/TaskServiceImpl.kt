@@ -4,10 +4,10 @@ import com.demo.tasks_app.entities.Task
 import com.demo.tasks_app.entities.dto.CreateTaskDto
 import com.demo.tasks_app.entities.dto.UpdateTaskDto
 import com.demo.tasks_app.exception.TaskAlreadyExistsException
+import com.demo.tasks_app.exception.TaskNotFoundException
 import com.demo.tasks_app.repository.TaskRepository
 import com.demo.tasks_app.service.TaskService
 import com.demo.tasks_app.toTaskEntity
-import jakarta.persistence.EntityNotFoundException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 
@@ -19,7 +19,7 @@ class TaskServiceImpl(private val repository: TaskRepository) : TaskService {
     }
 
     override fun findTaskById(taskId: Long): Task {
-        return repository.findById(taskId).orElseThrow { EntityNotFoundException("Task with $taskId not found") }
+        return repository.findById(taskId).orElseThrow { TaskNotFoundException("Task with $taskId not found") }
     }
 
     override fun findTasksByStatus(status: Boolean): List<Task> {

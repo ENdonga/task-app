@@ -5,13 +5,13 @@ import com.demo.tasks_app.entities.Task
 import com.demo.tasks_app.entities.dto.CreateTaskDto
 import com.demo.tasks_app.entities.dto.UpdateTaskDto
 import com.demo.tasks_app.exception.TaskAlreadyExistsException
+import com.demo.tasks_app.exception.TaskNotFoundException
 import com.demo.tasks_app.repository.TaskRepository
 import com.demo.tasks_app.toTaskEntity
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -88,12 +88,12 @@ class TaskServiceImplTest {
     }
 
     @Test
-    fun `should throw EntityNotFoundException when task is not found`() {
+    fun `test that TaskNotFoundException is thrown when task is not found`() {
         // given
         val taskId = 1L
         // when
         every { repository.findById(any()) } returns Optional.empty()
-        val exception = assertThrows<EntityNotFoundException> { service.findTaskById(taskId = 1) }
+        val exception = assertThrows<TaskNotFoundException> { service.findTaskById(taskId = 1) }
 
         assertThat(exception.message).isEqualTo("Task with $taskId not found")
         verify(exactly = 1) { repository.findById(any()) }
@@ -129,7 +129,7 @@ class TaskServiceImplTest {
     }
 
     @Test
-    fun `should throw EntityNotFoundException if task to update is not found`() {
+    fun `test that TaskNotFoundException is thrown if task to update is not found`() {
         // given
         val updateRequest = UpdateTaskDto(
             id = 1L,
@@ -140,7 +140,7 @@ class TaskServiceImplTest {
         )
         // when
         every { repository.findById(1L) } returns Optional.empty()
-        val exception = assertThrows<EntityNotFoundException> { service.updateTask(updateRequest) }
+        val exception = assertThrows<TaskNotFoundException> { service.updateTask(updateRequest) }
         // then
         assertThat(exception.message).isEqualTo("Task with ${updateRequest.id} not found")
         verify(exactly = 1) { repository.findById(1L) }
@@ -193,12 +193,12 @@ class TaskServiceImplTest {
     }
 
     @Test
-    fun `delete task throws EntityNotFoundException if task to delete is not found by the ID`() {
+    fun `test that TaskNotFoundException is thrown when task to delete is not found`() {
         // given
         val taskId = 1L
         // when
         every { repository.findById(taskId) } returns Optional.empty()
-        val exception = assertThrows<EntityNotFoundException> { service.deleteTask(taskId) }
+        val exception = assertThrows<TaskNotFoundException> { service.deleteTask(taskId) }
         // assert
         assertThat(exception.message).isEqualTo("Task with $taskId not found")
         verify(exactly = 0) { repository.deleteById(any()) }

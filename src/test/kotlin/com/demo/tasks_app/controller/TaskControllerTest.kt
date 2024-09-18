@@ -7,6 +7,7 @@ import com.demo.tasks_app.entities.dto.CreateTaskDto
 import com.demo.tasks_app.entities.dto.TaskDto
 import com.demo.tasks_app.entities.dto.UpdateTaskDto
 import com.demo.tasks_app.exception.TaskAlreadyExistsException
+import com.demo.tasks_app.exception.TaskNotFoundException
 import com.demo.tasks_app.service.TaskService
 import com.demo.tasks_app.toTaskEntity
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -20,8 +21,8 @@ import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.HttpStatus.BAD_REQUEST
-import org.springframework.http.HttpStatus.OK
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.*
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
@@ -116,7 +117,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
 
     // GET task by ID tests
     @Test
-    fun `should throw an exception when id parameter is invalid`() {
+    fun `test that bad request is returned when the task ID is invalid`() {
         val taskId = "test"
         mockMvc.perform(get("${baseUrl}/${taskId}").contentType(APPLICATION_JSON))
             .andExpect(status().isBadRequest)
@@ -126,18 +127,18 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `should return a bad request when id parameter is not found`() {
+    fun `test that 404 Not Found should be returned when a task is not found with the given id`() {
         `when`(mockService.findTaskById(taskId))
-            .thenThrow(EntityNotFoundException("Task with $taskId not found"))
+            .thenThrow(TaskNotFoundException("Task with $taskId not found"))
         mockMvc.perform(get("${baseUrl}/{id}", taskId).contentType(APPLICATION_JSON))
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(BAD_REQUEST.name))
-            .andExpect(jsonPath("$.statusCode").value(BAD_REQUEST.value()))
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.status").value(NOT_FOUND.name))
+            .andExpect(jsonPath("$.statusCode").value(NOT_FOUND.value()))
             .andExpect(jsonPath("$.reason").value("Task with $taskId not found"))
     }
 
     @Test
-    fun `should return a 200 success request when a task is found with the ID provided`() {
+    fun `test that status 200 OK is returned when a task is found with the ID provided`() {
         val task = Task(
             id = 1L,
             description = "Test",
@@ -157,7 +158,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
 
     // DELETE endpoint tests
     @Test
-    fun `should throw an exception when delete API id parameter is invalid`() {
+    fun `test that 400 Bad Request is returned when the task ID is invalid`() {
         val taskId = "test"
         mockMvc.perform(delete("${baseUrl}/{taskId}", taskId).contentType(APPLICATION_JSON))
             .andExpect(status().isBadRequest)
@@ -167,18 +168,18 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `should return a bad request when delete API id parameter is not found`() {
+    fun `test that status 404 Not Found is returned when task is not found by ID`() {
         `when`(mockService.deleteTask(taskId))
-            .thenThrow(EntityNotFoundException("Task with $taskId not found"))
+            .thenThrow(TaskNotFoundException("Task with $taskId not found"))
         mockMvc.perform(delete("${baseUrl}/{taskId}", taskId).contentType(APPLICATION_JSON))
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(BAD_REQUEST.name))
-            .andExpect(jsonPath("$.statusCode").value(BAD_REQUEST.value()))
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.status").value(NOT_FOUND.name))
+            .andExpect(jsonPath("$.statusCode").value(NOT_FOUND.value()))
             .andExpect(jsonPath("$.reason").value("Task with $taskId not found"))
     }
 
     @Test
-    fun `should return a 200 success request when a task is deleted successfully`() {
+    fun `test status 200 OK is returned when a task is deleted successfully`() {
         doNothing().`when`(mockService).deleteTask(taskId)
         mockMvc.perform(delete("${baseUrl}/{taskId}", taskId).contentType(APPLICATION_JSON))
             .andExpect(status().isOk)
@@ -189,7 +190,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
 
     // Patch endpoint tests
     @Test
-    fun `should update a task successfully`() {
+    fun `test that a task is updated successfully if it exists`() {
         // given
         val request = UpdateTaskDto(
             id = taskDto.id,
@@ -219,7 +220,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `should return bad request when id is not provided or a task with id is not found`() {
+    fun `test that 404 Not found is returned task with given id is not found`() {
         val invalidRequest = UpdateTaskDto(
             id = 0,
             description = taskDto.description,
@@ -227,16 +228,16 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
             isTaskOpen = taskDto.isTaskOpen,
             priority = taskDto.priority.toString()
         )
-        `when`(mockService.updateTask(invalidRequest)).thenThrow(EntityNotFoundException("Task with ${invalidRequest.id} not found"))
+        `when`(mockService.updateTask(invalidRequest)).thenThrow(TaskNotFoundException("Task with ${invalidRequest.id} not found"))
         val requestBody = mapper.writeValueAsString(invalidRequest)
         mockMvc.perform(patch(baseUrl).contentType(APPLICATION_JSON).content(requestBody))
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(BAD_REQUEST.name))
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.status").value(NOT_FOUND.name))
             .andExpect(jsonPath("$.reason").value("Task with ${invalidRequest.id} not found"))
     }
 
     @Test
-    fun `should return bad request when priority is not LOW MEDIUM or HIGH`() {
+    fun `test that 400 Bad Request is returned when priority is not LOW MEDIUM or HIGH`() {
         val invalidRequest = UpdateTaskDto(
             id = 1,
             description = taskDto.description,
@@ -253,7 +254,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
 
     // POST endpoint tests
     @Test
-    fun `should validate a task is created successfully`() {
+    fun `test that create task returns HTTP 201 status on a successful create`() {
         // given
         val request = CreateTaskDto(description = "Task", priority = "low")
         val task = Task(id = 1, description = "Task", isReminderSet = false, isTaskOpen = true, priority = LOW)
@@ -267,7 +268,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `should validate a validation error is displayed when description is blank`() {
+    fun `test that validation error returns HTTP 400 and error is displayed when description is blank`() {
         // given
         val request = CreateTaskDto(description = "", priority = "low")
         // when
@@ -279,7 +280,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `should validate a validation error is displayed when priority is invalid`() {
+    fun `test that a validation error is displayed when priority is invalid`() {
         // given
         val request = CreateTaskDto(description = "Task", priority = "INVALID_PRIORITY")
         // when
@@ -291,7 +292,7 @@ class TaskControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `should validate a task cannot be created with the same description more than once`() {
+    fun `test that a duplicate task cannot be created using description and returns HTTP 400`() {
         // given
         val request = CreateTaskDto(description = "Task", priority = "LOW")
         // when

@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: tasks_app
+  datasource:
+    username: sa
+    password: password
+    url: jdbc:h2:mem:task_db;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
